@@ -1,0 +1,36 @@
+import deal
+
+
+@deal.inv(
+lambda bankaccount: isinstance(bankaccount.balance, int | float)
+and bankaccount.balance >= 0
+)
+class BankAccount:
+    def __init__(self, balance=0):
+        self.balance = balance
+
+    @deal.pre(lambda self, amount: isinstance(amount, int | float) and amount > 0 )
+    def deposit(self, amount):
+        self.balance += amount
+        return f"{amount} средств успешно зачислены на счёт."
+
+    @deal.pre(lambda self, amount: amount > 0 and self.balance >= amount)
+    def withdraw(self, amount):
+        self.balance -= amount
+        return f"{amount} средств успешно сняты с счёта."
+
+    def check_balance(self):
+        return f"Баланс счёта: {self.balance}"
+
+
+
+
+def test_bank_account():
+    account = BankAccount()
+    assert account.check_balance() == "Баланс счёта: 0"
+
+    assert account.deposit(0.3) == "0.3 средств успешно зачислены на счёт."
+    assert account.check_balance() == "Баланс счёта: 0.3"
+
+    assert account.withdraw(0.1) == "0.1 средств успешно сняты с счёта."
+    assert account.check_balance() == f"Баланс счёта: {0.3 - 0.1}"
