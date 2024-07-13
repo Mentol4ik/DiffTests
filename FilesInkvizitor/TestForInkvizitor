@@ -1,0 +1,20 @@
+import os
+from main import *
+
+def test_deleting_file():
+    file_path = "test_file.txt"
+    with open(file_path, "w") as file:
+        file.write("test")
+
+    deleting(file_path)
+
+    assert not os.path.exists(file_path), "Файл не был удален"
+#tgt5g
+
+def test_deleting_folder():
+    folder_path = "test_folder"
+    os.mkdir(folder_path)
+
+    deleting(folder_path)
+
+    assert not os.path.exists(folder_path), "Папка не была удалена"
