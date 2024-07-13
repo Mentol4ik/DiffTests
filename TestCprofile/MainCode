@@ -1,0 +1,93 @@
+import smtplib
+import urllib
+import os
+import sys
+import pandas as pd
+import string
+import openpyxl as xl
+import requests
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+from platform import python_version
+import cProfile
+
+
+class Task:
+    def __init__(self,io, email, login, pwd):
+        self.io = io
+        self.email = email
+        self.login = login
+        self.pwd = pwd
+
+    def __str__(self):
+        return f'login =, {self.login}, email =, {self.email}, io=,{self.io}, pwd =, {self.pwd}'
+
+
+def parse_file(file_name) -> list[Task]:
+    results = []
+    _list = pd.read_excel('Пользователи KeyCloak.xlsx', sheet_name='Лист1')
+    row_count = _list.shape[1]
+    for i in range(0, row_count - 1):
+        login = _list["Логин"][i]
+        email = _list["email"][i]
+        io = _list["ИО"][i]
+        pwd = _list["Пароль"][i]
+
+        results.append(
+            Task(
+                login = login,
+                email = email,
+                io = io,
+                pwd = pwd
+
+            )
+        )
+    return results
+
+def send_notify_to_user(task) -> bool:
+    server = 'smtp.yandex.ru'  # Для отправки НЕ с Яндекса изменить на smtp....
+    user = 'mentolhik@yandex.ru'  # логин
+    password = 'spkqvfjwhuvxmjdt'  # пароль от аккаунта
+    recipients = task.login
+    sender = 'mentolhik@yandex.ru'  # Здесь указывается адрес отправителя
+    subject = 'Доступ к информационной системе «Подписание планов-графиков ТОР»'  # Здесь указывается тема письма
+    text = task.io +', здравствуйте!<br><br>    Уведомляем Вас, что включило Вас в реестр участников процесса подписания и согласования планов-графиков ТОР с использованием ЭЦП.<br><br>  С целью обеспечения доступа к разработанной информационной системе «Подписание планов-графиков ТОР» направляем Вам учетные данные для входа:<br><br>Логин: '+task.login+'<br>Пароль: '+task.pwd+'<br><br>   Войти в информационную систему можно по ссылке: https://chancellery.erdc.ru/ <br><br>   В случае возникновения вопросов Вы можете обратиться по адресам:<br>s.mironov@minvr.gov.ru – Миронов Святослав Николаевич;<br>m.magomedov@minvr.gov.ru – Магомадов Магомед Шамильевич.<br><br>С уважением,<br>Евстигнеев Павед Константинович<br>Главный специалист<br>Департамента информационных технологий<br>'
+    html = '<html><head></head><body><p>' + text + '</p></body></html>'
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = '<' + sender + '>'
+    msg['To'] = ''.join(recipients)
+    msg['Reply-To'] = sender
+    msg['Return-Path'] = sender
+
+    part_text = MIMEText(text, 'plain')
+    part_html = MIMEText(html, 'html')
+    msg.attach(part_text)
+    msg.attach(part_html)
+    mail = smtplib.SMTP_SSL(server)
+    mail.login(user, password)
+    mail.sendmail(sender, recipients, msg.as_string())
+    mail.quit()
+    return True
+
+
+
+
+
+
+
+def main():
+    cProfile.run('main()')
+    file_name = os.path.basename(r'/Users/matvejsvarev/PycharmProjects/NewRassilka')
+    tasks = parse_file(file_name)
+    for task in tasks:
+        send_notify_to_user(task)
+        print(task, 'Running ends successfully')
+
+
+
+
+if __name__ == '__main__':
+    sys.exit(main())
