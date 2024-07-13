@@ -1,0 +1,32 @@
+class StringManipulator:
+    def reverse(self, string):
+        return string[::-1]
+
+    def capitalize(self, string):
+        return string.upper()
+
+import unittest
+
+class TestStringManipulator(unittest.TestCase):
+    def test_reverse(self):
+        manipulator = StringManipulator()
+        result = manipulator.reverse("hello")
+        self.assertEqual(result, "olleh")
+
+    def test_capitalize(self):
+        manipulator = StringManipulator()
+        result = manipulator.capitalize("world")
+        self.assertEqual(result, "WORLD")
+
+    def test_reverse_empty_string(self):
+        manipulator = StringManipulator()
+        result = manipulator.reverse("")
+        self.assertEqual(result, "")
+
+    def test_capitalize_numbers(self):
+        manipulator = StringManipulator()
+        result = manipulator.capitalize("123")
+        self.assertEqual(result, "123")
+
+if __name__ == '__main__':
+    unittest.main()
